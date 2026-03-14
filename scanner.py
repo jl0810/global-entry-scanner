@@ -217,44 +217,50 @@ def main():
     print("🔍 Global Entry Appointment Scanner Started")
     print(f"📧 Alerts will be sent to: {', '.join(EMAIL_TO)}")
     print(f"🔄 Checking every {CHECK_INTERVAL} seconds")
-    print(f"📍 Monitoring {len(LOCATION_IDS)} locations\n")
+    print(f"📍 Monitoring {len(LOCATION_CONFIG)} locations:")
+    
+    for loc in LOCATION_CONFIG:
+        print(f"   - {loc['name']} (ID: {loc['id']})")
+    print()
     
     last_alerts = {}  # Track when we last alerted for each location
     
     while True:
         try:
-            for location_id in LOCATION_IDS:
-                location_name = get_location_name(location_id)
+            for location in LOCATION_CONFIG:
+                location_id = location["id"]
+                location_name = location["name"]
                 
-                print(f"Checking {location_name}...", end=" ")
+                print(f"Checking {location_name}...", end=' ')
+                
                 appointments = check_appointments(location_id)
                 
                 if appointments:
-                    print(f"✅ {len(appointments)} slots found!")
+                    print(f"Found {len(appointments)} slots!")
                     
-                    # Only send email if we haven't alerted in the last hour
-                    last_alert = last_alerts.get(location_id, 0)
-                    if time.time() - last_alert > 3600:  # 1 hour cooldown
-                        subject = f"🚨 Global Entry Slots Available - {location_name}"
+                    # Check if we should alert (avoid spamming)
+                    current_time = datetime.now()
+                    last_alert = last_alerts.get(location_id)
+                    
+                    if not last_alert or (current_time - last_alert).seconds > 300:  # 5 minutes between alerts
+                        subject = f"🎯 Global Entry Available: {location_name} ({len(appointments)} slots)"
                         body = format_appointment_email(appointments, location_name)
                         send_email(subject, body)
-                        last_alerts[location_id] = time.time()
+                        last_alerts[location_id] = current_time
                     else:
-                        print("   (Cooldown active, skipping email)")
+                        print(f"Skipping alert (recently sent)")
                 else:
                     print("No slots")
-                
-                time.sleep(2)  # Small delay between locations
             
-            print(f"\n💤 Sleeping {CHECK_INTERVAL}s...\n")
+            print("💤 Sleeping 60s...")
             time.sleep(CHECK_INTERVAL)
             
         except KeyboardInterrupt:
-            print("\n\n👋 Scanner stopped")
+            print("\n👋 Scanner stopped by user")
             break
         except Exception as e:
-            print(f"\n❌ Error: {e}")
-            time.sleep(CHECK_INTERVAL)
+            print(f"❌ Scanner error: {e}")
+            time.sleep(30)  # Wait before retrying
 
 
 if __name__ == "__main__":
