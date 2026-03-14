@@ -10,6 +10,7 @@ services:
       - USESEND_API_KEY=${USESEND_API_KEY}
       - NOTIFICATION_FROM=Global Entry Scanner <scanner@raydoug.com>
       - PYTHONUNBUFFERED=1
+      - SCAN_LOCATIONS=5444:Newark Liberty International Airport,14321:Charlotte-Douglas Airport (CLT)
     command: >
       sh -c "apt-get update && apt-get install -y curl && 
              curl -o /app/scanner.py 'https://raw.githubusercontent.com/jl0810/global-entry-scanner/main/scanner.py' &&
