@@ -1,0 +1,25 @@
+services:
+  global-entry-scanner:
+    image: python:3.11-slim
+    container_name: global-entry-scanner
+    restart: unless-stopped
+    networks:
+      - dokploy-network
+    environment:
+      - USESEND_HOST=http://usesend:3000
+      - USESEND_API_KEY=${USESEND_API_KEY}
+      - NOTIFICATION_FROM=Global Entry Scanner <scanner@raydoug.com>
+      - PYTHONUNBUFFERED=1
+    command: >
+      sh -c "apt-get update && apt-get install -y curl && 
+             curl -o /app/scanner.py 'https://raw.githubusercontent.com/jefflawson/global-entry-scanner/main/scanner.py' &&
+             pip install requests && python3 /app/scanner.py"
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+
+networks:
+  dokploy-network:
+    external: true
