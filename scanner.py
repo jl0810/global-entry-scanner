@@ -13,7 +13,7 @@ from typing import List, Dict
 
 # Configuration
 LOCATION_IDS = [
-    14321,  # Charlotte-Douglas Airport (CLT)
+    5444,  # Newark Liberty International Airport (for testing - has available slots)
 ]
 
 CHECK_INTERVAL = 60  # seconds between checks
