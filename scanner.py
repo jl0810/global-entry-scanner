@@ -5,11 +5,17 @@ Checks for available appointments and sends email alerts
 Uses Unsend (self-hosted email service) like Fakesharp
 """
 
-import requests
 import time
 from datetime import datetime
 import os
 from typing import List, Dict
+
+try:
+    from curl_cffi import requests  # Chrome TLS fingerprint impersonation
+    CURL_CFFI = True
+except ImportError:
+    import requests
+    CURL_CFFI = False
 
 # Configuration
 def parse_locations():
@@ -55,15 +61,17 @@ def check_appointments(location_id: int) -> List[Dict]:
             'Referer': 'https://ttp.cbp.dhs.gov/'
         }
         
-        # Use Tor SOCKS proxy if available
-        proxies = None
-        if os.getenv('USE_TOR_PROXY'):
-            proxies = {
-                'http': 'socks5h://tor-proxy:9050',
-                'https': 'socks5h://tor-proxy:9050'
-            }
-        
-        response = requests.get(url, headers=headers, proxies=proxies, timeout=30)
+        if CURL_CFFI:
+            # Impersonate Chrome120 TLS fingerprint - bypasses JA3/JA4 bot detection
+            response = requests.get(url, headers=headers, impersonate="chrome120", timeout=30)
+        else:
+            proxies = None
+            if os.getenv('USE_TOR_PROXY'):
+                proxies = {
+                    'http': 'socks5h://tor-proxy:9050',
+                    'https': 'socks5h://tor-proxy:9050'
+                }
+            response = requests.get(url, headers=headers, proxies=proxies, timeout=30)
         response.raise_for_status()
         
         data = response.json()
