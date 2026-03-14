@@ -55,7 +55,15 @@ def check_appointments(location_id: int) -> List[Dict]:
             'Referer': 'https://ttp.cbp.dhs.gov/'
         }
         
-        response = requests.get(url, headers=headers, timeout=10)
+        # Use Tor SOCKS proxy if available
+        proxies = None
+        if os.getenv('USE_TOR_PROXY'):
+            proxies = {
+                'http': 'socks5h://tor-proxy:9050',
+                'https': 'socks5h://tor-proxy:9050'
+            }
+        
+        response = requests.get(url, headers=headers, proxies=proxies, timeout=30)
         response.raise_for_status()
         
         data = response.json()
