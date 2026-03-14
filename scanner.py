@@ -12,9 +12,23 @@ import os
 from typing import List, Dict
 
 # Configuration
-LOCATION_IDS = [
-    5444,  # Newark Liberty International Airport (for testing - has available slots)
-]
+def parse_locations():
+    """Parse location IDs and descriptions from environment variable"""
+    locations_str = os.getenv("SCAN_LOCATIONS", "14321:Charlotte-Douglas Airport (CLT)")
+    locations = []
+    
+    for loc in locations_str.split(','):
+        loc = loc.strip()
+        if ':' in loc:
+            loc_id, desc = loc.split(':', 1)
+            locations.append({"id": int(loc_id.strip()), "name": desc.strip()})
+        else:
+            # Fallback for simple ID format
+            locations.append({"id": int(loc), "name": f"Location {loc}"})
+    
+    return locations
+
+LOCATION_CONFIG = parse_locations()
 
 CHECK_INTERVAL = 60  # seconds between checks
 
