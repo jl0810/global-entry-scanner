@@ -45,7 +45,9 @@ USESEND_HOST = os.getenv("USESEND_HOST", "http://usesend:3000")
 USESEND_API_URL = f"{USESEND_HOST}/api/v1/emails"
 USESEND_API_KEY = os.getenv("USESEND_API_KEY")
 EMAIL_FROM = os.getenv("NOTIFICATION_FROM", "Global Entry Scanner <scanner@raydoug.com>")
-EMAIL_TO = ["jefflawson@gmail.com", "kate.r.lawson@gmail.com"]
+# Parse email recipients from environment variable
+EMAIL_TO_STR = os.getenv("EMAIL_TO", "jefflawson@gmail.com,kate.r.lawson@gmail.com")
+EMAIL_TO = [email.strip() for email in EMAIL_TO_STR.split(',')]
 
 # DHS API endpoint
 API_BASE = "https://ttp.cbp.dhs.gov/schedulerapi/slots"
@@ -203,7 +205,7 @@ def format_appointment_email(appointments: List[Dict], location_name: str) -> st
                 <li>Confirm your appointment</li>
             </ol>
             
-            <a href="https://ttp.cbp.dhs.gov/" class="cta">📲 Book Your Appointment Now →</a>
+            <a href="https://ttp.cbp.dhs.gov/" class="cta" style="color: #ffffff !important; text-decoration: none;">📲 Book Your Appointment Now →</a>
             
             <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
                 💡 <strong>Tip:</strong> If the slot is gone when you get there, don't worry! 
