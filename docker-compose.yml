@@ -7,7 +7,7 @@ services:
       - dokploy-network
     environment:
       - USESEND_HOST=http://usesend:3000
-      - USESEND_API_KEY=\${USESEND_API_KEY}
+      - USESEND_API_KEY=${USESEND_API_KEY}
       - NOTIFICATION_FROM=Global Entry Scanner <scanner@raydoug.com>
       - PYTHONUNBUFFERED=1
       - SCAN_LOCATIONS=5444:Newark Liberty International Airport,14321:Charlotte-Douglas Airport (CLT)
