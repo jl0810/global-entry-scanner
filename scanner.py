@@ -38,7 +38,7 @@ def parse_locations():
 
 LOCATION_CONFIG = parse_locations()
 
-CHECK_INTERVAL = 60  # seconds between checks
+CHECK_INTERVAL = int(os.getenv("CHECK_INTERVAL", "60"))  # seconds between checks
 
 # Email configuration (Unsend API - same as Fakesharp)
 USESEND_HOST = os.getenv("USESEND_HOST", "http://usesend:3000")
