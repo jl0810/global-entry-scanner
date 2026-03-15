@@ -63,16 +63,17 @@ def check_appointments(location_id: int) -> List[Dict]:
             'Referer': 'https://ttp.cbp.dhs.gov/'
         }
         
+        proxies = None
+        if os.getenv('USE_TOR_PROXY'):
+            proxies = {
+                'http': 'socks5h://tor-proxy:9050',
+                'https': 'socks5h://tor-proxy:9050'
+            }
+        
         if CURL_CFFI:
             # Impersonate Chrome120 TLS fingerprint - bypasses JA3/JA4 bot detection
-            response = requests.get(url, headers=headers, impersonate="chrome120", timeout=30)
+            response = requests.get(url, headers=headers, impersonate="chrome120", proxies=proxies, timeout=30)
         else:
-            proxies = None
-            if os.getenv('USE_TOR_PROXY'):
-                proxies = {
-                    'http': 'socks5h://tor-proxy:9050',
-                    'https': 'socks5h://tor-proxy:9050'
-                }
             response = requests.get(url, headers=headers, proxies=proxies, timeout=30)
         response.raise_for_status()
         
