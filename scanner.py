@@ -244,7 +244,7 @@ def main():
         print(f"   - {loc['name']} (ID: {loc['id']})")
     print()
     
-    last_alerts = {}  # Track when we last alerted for each location
+    last_slots = {}  # Track the specific slot timestamps we last alerted for each location
     
     while True:
         try:
@@ -259,19 +259,22 @@ def main():
                 if appointments:
                     print(f"Found {len(appointments)} slots!")
                     
-                    # Check if we should alert (avoid spamming)
-                    current_time = datetime.now()
-                    last_alert = last_alerts.get(location_id)
+                    # Extract the start timestamps of the current slots
+                    current_slots = [apt.get('startTimestamp') for apt in appointments]
+                    previous_slots = last_slots.get(location_id, [])
                     
-                    if not last_alert or (current_time - last_alert).seconds > 300:  # 5 minutes between alerts
+                    # Only alert if the availability has changed
+                    if current_slots != previous_slots:
                         subject = f"🎯 Global Entry Available: {location_name} ({len(appointments)} slots)"
                         body = format_appointment_email(appointments, location_name)
                         send_email(subject, body)
-                        last_alerts[location_id] = current_time
+                        last_slots[location_id] = current_slots
                     else:
-                        print(f"Skipping alert (recently sent)")
+                        print(f"Skipping alert (exact same slots as previous alert)")
                 else:
                     print("No slots")
+                    # Clear state so if slots reappear, we alert again immediately
+                    last_slots.pop(location_id, None)
             
             print("💤 Sleeping 60s...")
             time.sleep(CHECK_INTERVAL)
