@@ -11,6 +11,8 @@ import os
 from typing import List, Dict
 
 try:
+    import urllib3
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     from curl_cffi import requests  # Chrome TLS fingerprint impersonation
     CURL_CFFI = True
 except ImportError:
@@ -52,6 +54,8 @@ API_BASE = "https://ttp.cbp.dhs.gov/schedulerapi/slots"
 def check_appointments(location_id: int) -> List[Dict]:
     """Check for available appointments at a location"""
     try:
+    import urllib3
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         url = f"{API_BASE}?orderBy=soonest&limit=1&locationId={location_id}&minimum=1"
         
         # Add headers to avoid 403 Forbidden
@@ -89,6 +93,8 @@ def send_email(subject: str, body: str):
         return
     
     try:
+    import urllib3
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         # Send to each recipient
         for recipient in EMAIL_TO:
             payload = {
@@ -131,6 +137,8 @@ def format_appointment_email(appointments: List[Dict], location_name: str) -> st
     slot_time = first_slot.get('startTimestamp', '')
     
     try:
+    import urllib3
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         dt = datetime.fromisoformat(slot_time.replace('Z', '+00:00'))
         formatted_date = dt.strftime('%A, %B %d, %Y')
         formatted_time = dt.strftime('%I:%M %p')
@@ -173,6 +181,8 @@ def format_appointment_email(appointments: List[Dict], location_name: str) -> st
     for apt in appointments[:10]:  # Show first 10
         slot_dt = apt.get('startTimestamp', 'Unknown')
         try:
+    import urllib3
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
             dt = datetime.fromisoformat(slot_dt.replace('Z', '+00:00'))
             formatted = dt.strftime('%a, %b %d at %I:%M %p')
         except:
@@ -243,6 +253,8 @@ def main():
     
     while True:
         try:
+    import urllib3
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
             for location in LOCATION_CONFIG:
                 location_id = location["id"]
                 location_name = location["name"]
