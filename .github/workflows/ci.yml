@@ -4,8 +4,13 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened, labeled]
+permissions:
+  contents: write
+  pull-requests: write
 jobs:
   ci:
+    if: github.event_name == 'push' || github.event.action != 'labeled'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,3 +34,26 @@ jobs:
           else
             echo "No tests directory found, skipping"
           fi
+
+  auto-merge:
+    if: github.event_name == 'pull_request' && github.event.action == 'labeled' && github.event.label.name == 'qa-passed'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for QA agent to attempt merge first
+        run: sleep 180
+      - name: Merge if QA agent did not
+        run: |
+          STATE=$(gh pr view "${{ github.event.pull_request.number }}" \
+            --repo "${{ github.repository }}" \
+            --json state --jq .state)
+          if [ "$STATE" = "MERGED" ]; then
+            echo "Already merged by QA agent — nothing to do."
+            exit 0
+          fi
+          echo "PR still open after 3 min — merging as fallback."
+          gh pr merge "${{ github.event.pull_request.number }}" \
+            --squash \
+            --repo "${{ github.repository }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
